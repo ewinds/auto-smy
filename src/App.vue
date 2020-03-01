@@ -2,7 +2,7 @@
   <div id="app">
     <img src="./assets/logo.png" />
     <div>
-      <el-button type="primary">Order Mask</el-button>
+      <el-button type="primary" @click="handleOrder">Order Mask</el-button>
     </div>
   </div>
 </template>
@@ -2235,6 +2235,12 @@ export default {
         }
       ]
     };
+  },
+  methods: {
+    handleOrder() {
+      this.listQuery.page = 1;
+      this.getList();
+    }
   }
 };
 </script>
