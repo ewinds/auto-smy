@@ -1,4 +1,4 @@
-import request from "@/plugin/axios";
+import request from "@/plugins/axios";
 
 /**
  * 下单

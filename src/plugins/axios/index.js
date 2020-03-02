@@ -1,5 +1,4 @@
 import Vue from "vue";
-import store from "@/store";
 import axios from "axios";
 import { Message } from "element-ui";
 
@@ -12,14 +11,6 @@ function errorCreate(msg) {
 
 // 记录和显示错误
 function errorLog(error) {
-  // 添加到日志
-  store.dispatch("d2admin/log/push", {
-    message: "数据请求异常",
-    type: "danger",
-    meta: {
-      error
-    }
-  });
   // 打印到控制台
   if (process.env.NODE_ENV === "development") {
     console.log(error);
@@ -35,7 +26,7 @@ function errorLog(error) {
 // 创建一个 axios 实例
 const service = axios.create({
   baseURL: process.env.VUE_APP_API,
-  timeout: 5000 // 请求超时时间
+  timeout: 60000 // 请求超时时间
 });
 
 // 请求拦截器
@@ -70,15 +61,15 @@ service.interceptors.response.use(
       switch (code) {
         case 0:
           // [ 示例 ] code === 0 代表没有错误
-          return dataAxios.data;
+          return dataAxios;
         case "xxx":
           // [ 示例 ] 其它和后台约定的 code
           errorCreate(`[ code: xxx ] ${dataAxios.msg}: ${response.config.url}`);
           break;
         default:
           // 不是正确的 code
-          errorCreate(`${dataAxios.msg}: ${response.config.url}`);
-          break;
+          return dataAxios;
+        // break;
       }
     }
   },
@@ -86,10 +77,7 @@ service.interceptors.response.use(
     if (error && error.response) {
       switch (error.response.status) {
         case 400:
-          // error.message = '请求错误'
-          error.message = store.getters["d2admin/message/getMessage"](
-            error.response.data
-          );
+          error.message = "请求错误";
           break;
         case 401:
           error.message = "未授权，请登录";

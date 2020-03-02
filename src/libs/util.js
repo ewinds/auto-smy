@@ -10,5 +10,21 @@ util.encruption = function(data) {
   e.setPublicKey(publicKey);
   return e.encrypt(data);
 };
+util.delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+util.makeOrder = async obj =>
+  new Promise(resolve => {
+    console.log(obj);
+    const arr = [true, false];
+    const ret = arr[Math.floor(Math.random() * arr.length)];
+    resolve(
+      ret
+        ? {
+            result: "",
+            code: -1,
+            msg: "当前预约人数较多，请稍后重试！"
+          }
+        : { result: 666, code: 200 }
+    );
+  });
 
 export default util;
