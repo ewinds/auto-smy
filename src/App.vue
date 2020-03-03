@@ -14,7 +14,7 @@ import { makeOrder } from "@/api/order";
 
 export default {
   name: "app",
-  data() {
+  data () {
     return {
       pharmacies: [
         {
@@ -2240,13 +2240,13 @@ export default {
       ]
     };
   },
-  created() {
+  created () {
     if (!this.$ls.get("lineitems")) {
       this.$ls.set("lineitems", []);
     }
   },
   methods: {
-    async handleOrder() {
+    async handleOrder () {
       const lineitems = this.$ls.get("lineitems");
       const subscribeDate = moment()
         .add(1, "d")
@@ -2280,8 +2280,8 @@ export default {
 
       this.$message(`${subscribeDate} done.`);
     },
-    async order(subscribeDate, pharmacy, form) {
-      const maxRetry = 3;
+    async order (subscribeDate, pharmacy, form) {
+      const maxRetry = 300;
       const {
         pharmacyName,
         pharmacyAddress,
@@ -2327,7 +2327,7 @@ export default {
             console.log(`${new Date().toLocaleString()} ${count}`);
           }
         });
-        await util.delay(100);
+        await util.delay(2000);
         count++;
       }
     }
