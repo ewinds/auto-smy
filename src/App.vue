@@ -2237,7 +2237,8 @@ export default {
           businessHours: null,
           distance: null
         }
-      ]
+      ],
+      orderstatus: {}
     };
   },
   created () {
@@ -2255,6 +2256,7 @@ export default {
       if (lineitems.length === 0) {
         this.$message("lineitems were not found.");
       }
+      this.orderstatus = {};
 
       for (const lineitem of lineitems) {
         const pharmacy = this.pharmacies.find(pharmacy =>
@@ -2265,6 +2267,7 @@ export default {
           this.$message(`${lineitem.pharmacyName} was not found.`);
           continue;
         }
+        this.orderstatus[lineitem.idcard] = 0;
 
         this.order(
           subscribeDate,
@@ -2291,7 +2294,11 @@ export default {
       const { realName, idcard, mobile } = form;
       let count = 0;
 
+
       while (count < maxRetry) {
+        if (this.orderstatus[idcard] === 1) {
+          break;
+        }
         const payload = {
           maskCount: 5,
           subscribeDate,
@@ -2320,14 +2327,16 @@ export default {
         // async
         makeOrder(payload).then(response => {
           if (response.code === 200) {
-            console.log(response.result);
-            this.$message(`${realName} ordered done.`);
+            this.orderstatus[idcard] = 1;
+            console.log(`${realName} OK!!!`, response.result, response.msg);
           } else {
-            console.log(response.msg);
-            console.log(`${new Date().toLocaleString()} ${count}`);
+            if (response.msg == '您5天内已预约过口罩，不能再次预约') {
+              this.orderstatus[idcard] = 1;
+            }
+            console.log(`${realName}`, response.result, response.code, response.msg, `${new Date().toLocaleString()} ${count}`);
           }
         });
-        await util.delay(2000);
+        await util.delay(500);
         count++;
       }
     }
