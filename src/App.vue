@@ -99,6 +99,8 @@ export default {
       } = pharmacy;
       const { realName, idcard, mobile } = form;
 
+      const maxRetry = 100;
+      let count = 0;
       var queue = [];
       const check = function () {
         if (queue.length > 0) {
@@ -128,33 +130,43 @@ export default {
             if (response.msg == "调用成功") {
               console.log(`${realName} OK!!!`, response.result.orderNo, response.result.createTime);
             } else {
-              console.log(`${realName} `, response.result, response.msg);
+              console.log(`${realName} `, response.result.orderNo, response.msg);
             }
           } else {
+            let printflag = false;
             if (response.msg == "您5天内已预约过口罩，不能再次预约") {
               // do nothing
+              printflag = true;
             } else if (response.msg == "药店活动已结束") {
               // do nothing
+              printflag = true;
               // console.log('欢迎下次再来')
             } else {
-              queue.push(target); // 重新加入队列参加循环
+              // 当前预约人数较多，请稍后重试！
+              if (count <= maxRetry) {
+                count++;
+                queue.push(target); // 重新加入队列参加循环
+              } else {
+                console.log(`已经运行了${maxRetry}次请求。`)
+              }
             }
-            console.log(
-              `${realName}`,
-              response.result,
-              response.code,
-              response.msg,
-              `${new Date().toLocaleString()}`
-            );
+            if (printflag) {
+              console.log(
+                `${realName}`,
+                response.result,
+                response.code,
+                response.msg,
+                `${new Date().toLocaleString()}`
+              );
+            }
             check();
           }
         });
       };
+      count++;
       queue.push(form);
       check();
 
-      // let count = 0;
-      // const maxRetry = 2;
       // while (count < maxRetry) {
       //   if (this.orderstatus[idcard] === 1) {
       //     break;
