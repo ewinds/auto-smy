@@ -9,14 +9,13 @@
 
 <script>
 import * as moment from "moment";
-import { findPharmacy, encruption } from "@/libs/util";//, delay
+import { findPharmacy, encruption } from "@/libs/util";
 import { makeOrder } from "@/api/order";
 
 export default {
   name: "app",
   data() {
     return {
-      orderstatus: {},
       orderlist: []
     };
   },
@@ -38,44 +37,17 @@ export default {
       const subscribeDate = moment()
         .add(1, "d")
         .format("YYYY-MM-DD");
-
       if (lineitems.length === 0) {
         this.$message("lineitems were not found.");
         return;
       }
-      this.orderstatus = {};
-
-      // for (const lineitem of lineitems) {
-      //   const pharmacy = findPharmacy(lineitem.pharmacyName);
-
-      //   if (!pharmacy) {
-      //     this.$message(`${lineitem.pharmacyName} was not found.`);
-      //     continue;
-      //   }
-      //   this.orderstatus[lineitem.idcard] = 0;
-
-      //   this.order(
-      //     subscribeDate,
-      //     {
-      //       pharmacyName: pharmacy.serviceName,
-      //       pharmacyAddress: pharmacy.serviceAddress,
-      //       pharmacyMobile: pharmacy.phone,
-      //       pharmcayId: pharmacy.id
-      //     },
-      //     lineitem
-      //   );
-      // }
-
       while (lineitems.length > 0) {
         const lineitem = lineitems.shift();
         const pharmacy = findPharmacy(lineitem.pharmacyName);
-
         if (!pharmacy) {
           this.$message(`${lineitem.pharmacyName} was not found.`);
           continue;
         }
-        this.orderstatus[lineitem.idcard] = 0;
-
         this.order(
           subscribeDate,
           {
@@ -87,8 +59,7 @@ export default {
           lineitem
         );
       }
-
-      this.$message(`${subscribeDate} done.`);
+      this.$message(`${subscribeDate} All items have been sent.`);
     },
     async order(subscribeDate, pharmacy, form) {
       const {
@@ -97,9 +68,8 @@ export default {
         pharmacyMobile,
         pharmcayId
       } = pharmacy;
-      const { realName, idcard, mobile } = form;
-
-      const maxRetry = 100;
+      const { realName, idcard, mobile, subscribeTime = "中午" } = form;
+      const maxRetry = 100; // 运行最大次数后停止, 可再次点击运行
       let count = 0;
       var queue = [];
       const check = function () {
@@ -112,7 +82,7 @@ export default {
         const payload = {
           maskCount: 5,
           subscribeDate,
-          subscribeTime: "中午",
+          subscribeTime,
           pharmacyName,
           pharmacyAddress,
           pharmacyMobile,
@@ -123,7 +93,6 @@ export default {
           businessHours: null,
           subscribeChannel: 0
         };
-
         makeOrder(payload).then(response => {
           if (response.code === 200) {
             // 调用成功
@@ -166,52 +135,6 @@ export default {
       count++;
       queue.push(form);
       check();
-
-      // while (count < maxRetry) {
-      //   if (this.orderstatus[idcard] === 1) {
-      //     break;
-      //   }
-      //   const payload = {
-      //     maskCount: 5,
-      //     subscribeDate,
-      //     subscribeTime: "中午",
-      //     pharmacyName,
-      //     pharmacyAddress,
-      //     pharmacyMobile,
-      //     pharmcayId,
-      //     realName: encruption(realName),
-      //     idcard: encruption(idcard),
-      //     mobile: encruption(mobile),
-      //     businessHours: null,
-      //     subscribeChannel: 0
-      //   };
-
-      //   makeOrder(payload).then(response => {
-      //     if (response.code === 200) {
-      //       this.orderstatus[idcard] = 1;
-      //       // 调用成功
-      //       if (response.msg == "调用成功") {
-      //         console.log(`${realName} OK!!!`, response.result.orderNo, response.result.createTime);
-      //       } else {
-      //         console.log(`${realName} `, response.result, response.msg);
-      //       }
-      //     } else {
-      //       if (response.msg == "您5天内已预约过口罩，不能再次预约") {
-      //         this.orderstatus[idcard] = 1;
-      //       }
-
-      //       console.log(
-      //         `${realName}`,
-      //         response.result,
-      //         response.code,
-      //         response.msg,
-      //         `${new Date().toLocaleString()} ${count}`
-      //       );
-      //     }
-      //   });
-      //   await delay(5000);
-      //   count++;
-      // }
     }
   }
 };
