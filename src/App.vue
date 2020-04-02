@@ -69,7 +69,7 @@ export default {
         pharmcayId
       } = pharmacy;
       const { realName, idcard, mobile, subscribeTime = "中午" } = form;
-      const maxRetry = 100; // 运行最大次数后停止, 可再次点击运行
+      const maxRetry = 300; // 运行最大次数后停止, 可再次点击运行
       let count = 0;
       var queue = [];
       const check = function () {
@@ -80,7 +80,7 @@ export default {
       };
       const domask = function (target) {
         const payload = {
-          maskCount: 5,
+          maskCount: 10,
           subscribeDate,
           subscribeTime,
           pharmacyName,
@@ -129,6 +129,14 @@ export default {
               );
             }
             check();
+          }
+        }).catch(e => {
+          console.log('EXCEPTION=', e)
+          if (count <= maxRetry) {
+            count++;
+            queue.push(target); // 重新加入队列参加循环
+          } else {
+            console.log(`已经运行了${maxRetry}次请求。`)
           }
         });
       };
